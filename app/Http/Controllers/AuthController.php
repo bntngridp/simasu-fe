@@ -2,60 +2,124 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\AdminSession;
+use App\Support\SecurityAudit;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\Str;
+use Illuminate\Support\ViewErrorBag;
 
 class AuthController extends Controller
 {
-    // Menampilkan halaman login
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
-        if (Session::has('api_token')) {
-            return redirect()->route('dashboard');
+        if ($request->session()->has('api_token')) {
+            if (! AdminSession::expired($request)) {
+                return redirect()->route('dashboard');
+            }
+
+            SecurityAudit::record($request, 'session_expired', $request->session()->get('user'));
+            AdminSession::invalidate($request);
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Sesi berakhir karena tidak aktif. Silakan login kembali.']);
         }
-        return view('auth.login');
+
+        return response()->view('auth.login')->header('Cache-Control', 'no-store, private');
     }
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:254'],
+            'password' => ['required', 'string'],
         ]);
 
-        try {
-            $baseUrl = config('api.base_url');
-            $response = Http::withoutVerifying()->post("{$baseUrl}/api/login", [
-                'email' => $request->email,
-                'password' => $request->password,
-            ]);
+        $email = Str::lower(trim($validated['email']));
+        $key = 'admin-login:'.hash('sha256', $email.'|'.$request->ip());
+        $limit = max(1, (int) config('security.login_max_attempts', 5));
+        $decay = max(1, (int) config('security.login_decay_seconds', 60));
 
-            if ($response->successful()) {
-                $data = $response->json();
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
+            $seconds = max(1, RateLimiter::availableIn($key));
+            SecurityAudit::record($request, 'login_throttled', email: $email);
+            $message = "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik.";
 
-                Session::put('api_token', $data['token'] ?? null);
-                Session::put('user', $data['user'] ?? []);
-
-                if (($data['user']['role'] ?? '') !== 'admin') {
-                    Session::flush();
-                    return back()->withErrors(['email' => 'Akun ini bukan admin.']);
-                }
-
-                return redirect()->route('dashboard')->with('success', 'Login berhasil!');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message, 'retry_after' => $seconds], 429)
+                    ->header('Retry-After', (string) $seconds);
             }
-            return back()->withErrors([
-                'email' => 'Email atau password salah.',
-            ])->withInput($request->only('email'));
-        } catch (\Exception $e) {
-            return back()->withErrors([
-                'email' => 'Gagal terhubung ke server API. Coba lagi nanti.',
-            ]);
+
+            return response()->view('auth.login', [
+                'email' => $email,
+                'errors' => (new ViewErrorBag)->put('default', new MessageBag(['email' => $message])),
+            ], 429)->header('Retry-After', (string) $seconds)->header('Cache-Control', 'no-store, private');
         }
+
+        try {
+            $response = Http::connectTimeout(3)->timeout(10)->post(config('api.base_url').'/api/login', [
+                'email' => $email,
+                'password' => $validated['password'],
+            ]);
+        } catch (ConnectionException) {
+            return $this->unavailable($request, $email);
+        }
+
+        if ($response->status() === 401) {
+            RateLimiter::hit($key, $decay);
+            SecurityAudit::record($request, 'login_failed', email: $email);
+
+            return back()->withErrors(['email' => 'Email atau password salah.'])
+                ->withInput(['email' => $email]);
+        }
+
+        $data = $response->json();
+        if (! $response->successful() || ! is_array($data)
+            || ! is_string($data['token'] ?? null) || trim($data['token']) === ''
+            || ! is_array($data['user'] ?? null) || ! isset($data['user']['role'])) {
+            return $this->unavailable($request, $email);
+        }
+
+        if ($data['user']['role'] !== 'admin') {
+            RateLimiter::hit($key, $decay);
+            SecurityAudit::record($request, 'access_denied', $data['user'], $email);
+            AdminSession::invalidate($request);
+
+            return back()->withErrors(['email' => 'Akun ini bukan admin.'])->withInput(['email' => $email]);
+        }
+
+        RateLimiter::clear($key);
+        SecurityAudit::record($request, 'login_succeeded', $data['user'], $email);
+        $request->session()->regenerate(true);
+        $request->session()->put([
+            'api_token' => $data['token'],
+            'user' => $data['user'],
+            'last_activity_at' => now()->timestamp,
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Login berhasil!');
     }
-    public function logout()
+
+    public function logout(Request $request)
     {
-        Session::forget(['api_token', 'user']);
-        return redirect()->route('login')->with('success', 'Berhasil logout.');
+        if ($request->session()->has('api_token')) {
+            SecurityAudit::record($request, 'logout', $request->session()->get('user'));
+        }
+
+        AdminSession::invalidate($request);
+
+        return redirect()->route('login')->with('success', 'Berhasil logout.')
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    private function unavailable(Request $request, string $email)
+    {
+        SecurityAudit::record($request, 'api_unavailable', email: $email);
+
+        return back()->withErrors(['email' => 'Layanan login sedang tidak tersedia. Coba lagi nanti.'])
+            ->withInput(['email' => $email]);
     }
 }

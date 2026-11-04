@@ -11,6 +11,7 @@ use App\Http\Middleware\CekLoginApi;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\SecurityEventController;
 
 Route::get('/', function () {
     if (session()->has('api_token')) {
@@ -64,6 +65,8 @@ Route::middleware([CekLoginApi::class])->group(function () {
 
     // Notifikasi Admin
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+
+    Route::get('/keamanan', [SecurityEventController::class, 'index'])->name('keamanan.index');
 
     // Profil
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil');

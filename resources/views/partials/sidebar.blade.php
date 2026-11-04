@@ -56,6 +56,14 @@
             </a>
         </li>
 
+        @if(session('user.role') === 'admin')
+        <li>
+            <a href="{{ route('keamanan.index') }}" class="nav-link text-white {{ request()->routeIs('keamanan.*') ? 'active bg-success' : '' }}">
+                Riwayat Keamanan
+            </a>
+        </li>
+        @endif
+
         <li class="nav-item mt-3">
             <a href="{{ route('permintaan.index') }}"
                 class="nav-link text-white text-decoration-underline hover-biru {{ request()->routeIs('permintaan*') ? 'active bg-success' : '' }}">

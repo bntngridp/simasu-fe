@@ -2,7 +2,7 @@ name: CI DevOps
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'devops/**']
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -66,13 +66,15 @@ jobs:
           APP_KEY: base64:2n6IKs9az4wR10OkNy3L+qnxpYXxKC8mD2pbAz/lYnc=
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
-        run: php artisan test --coverage-clover=coverage.xml
+        run: php artisan test --coverage --min=51 --coverage-clover=coverage.xml --log-junit=test-results.xml
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-coverage
-          path: coverage.xml
+          path: |
+            coverage.xml
+            test-results.xml
           if-no-files-found: error
 
   dependency-check:
