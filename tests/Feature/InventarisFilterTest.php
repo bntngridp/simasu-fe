@@ -90,6 +90,15 @@ class InventarisFilterTest extends TestCase
         $response->assertDontSee('<option value="ibadah"', false);
     }
 
+    public function test_every_filter_control_has_accessible_label(): void
+    {
+        $response = $this->getInventaris();
+
+        foreach (['searchInput', 'kategoriFilter', 'sortSelect', 'statusFilter'] as $id) {
+            $response->assertSee('<label for="' . $id . '"', false);
+        }
+    }
+
     public function test_extract_categories_ignores_empty_and_placeholder(): void
     {
         $items = collect([
