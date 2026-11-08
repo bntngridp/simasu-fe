@@ -19,6 +19,8 @@ Job build memasang dependency, membangun asset Vite, dan menjalankan PHPUnit den
 
 Job `SonarQube Cloud Analysis` mengunduh artifact coverage setelah build berhasil. Scanner membaca cakupan sumber dan test dari `sonar-project.properties`, lalu mengirim analisis ke project Cloud yang dipilih. Parameter `sonar.php.coverage.reportPaths=coverage.xml` mengimpor coverage PHP; SonarQube tidak menjalankan PHPUnit untuk menghasilkan coverage itu sendiri.
 
+Analisis sumber mencakup `app`, `config`, `routes`, `resources`, dan `database/migrations`, termasuk migration tabel riwayat keamanan. Pengukuran coverage dibatasi pada `app`, konsisten dengan konfigurasi sumber PHPUnit. Folder lain tetap dianalisis kualitas kodenya; pengecualian coverage tidak mengecualikan issues pada folder tersebut.
+
 Job Cloud berjalan pada main/master dan PR internal menuju branch utama. Push ke branch devops menjalankan build/test, sedangkan analisis Cloud untuk perubahan tersebut berjalan melalui event PR. Pola ini menghindari analisis branch tambahan yang tidak tersedia pada Free plan.
 
 Jika key project atau organisasi belum dikonfigurasi, job Cloud berstatus skipped secara eksplisit. Jika project sudah diaktifkan tetapi token tidak tersedia, job gagal dengan pesan konfigurasi. Scanner menunggu quality gate dan mengembalikan kegagalan jika gate tidak terpenuhi; tidak ada `|| true` pada langkah scanner.
