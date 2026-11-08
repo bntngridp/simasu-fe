@@ -6,6 +6,10 @@ use App\Models\SecurityEvent;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/**
+ * Kontribusi Bintang (BNT-03): halaman riwayat keamanan khusus admin
+ * dengan validasi filter aktivitas, email, tanggal, dan pagination.
+ */
 class SecurityEventController extends Controller
 {
     public function index(Request $request)

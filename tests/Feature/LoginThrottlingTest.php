@@ -6,6 +6,10 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\AuthSecurityTestCase;
 
+/**
+ * Kontribusi Bintang (BNT-01): pengujian pembatasan login, pemisahan email/IP,
+ * batas waktu, reset penghitung, validasi input, dan kegagalan API.
+ */
 class LoginThrottlingTest extends AuthSecurityTestCase
 {
     private function failLogin(array $input = []): void

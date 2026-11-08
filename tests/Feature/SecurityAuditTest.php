@@ -6,6 +6,10 @@ use App\Models\SecurityEvent;
 use Illuminate\Support\Facades\Http;
 use Tests\AuthSecurityTestCase;
 
+/**
+ * Kontribusi Bintang (BNT-03): pengujian pencatatan audit tanpa data rahasia,
+ * akses admin, filter, pagination, dan escaping nilai pada halaman riwayat.
+ */
 class SecurityAuditTest extends AuthSecurityTestCase
 {
     private function event(array $values = []): SecurityEvent

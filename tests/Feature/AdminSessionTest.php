@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use Illuminate\Support\Facades\Http;
 use Tests\AuthSecurityTestCase;
 
+/**
+ * Kontribusi Bintang (BNT-02): pengujian regenerasi sesi, batas waktu idle,
+ * pembaruan aktivitas, logout, dan pembersihan sesi beserta rotasi CSRF.
+ */
 class AdminSessionTest extends AuthSecurityTestCase
 {
     public function test_login_regenerates_the_session_and_sets_the_activity_timestamp(): void

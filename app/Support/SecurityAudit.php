@@ -6,6 +6,10 @@ use App\Models\SecurityEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Kontribusi Bintang (BNT-03): pencatatan metadata aktivitas keamanan
+ * dengan daftar field terbatas, tanpa password, token, atau body request.
+ */
 class SecurityAudit
 {
     public static function record(Request $request, string $event, ?array $user = null, ?string $email = null): void

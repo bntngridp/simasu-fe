@@ -31,6 +31,10 @@ class AuthController extends Controller
         return response()->view('auth.login')->header('Cache-Control', 'no-store, private');
     }
 
+    /**
+     * Kontribusi Bintang (BNT-01): pembatasan percobaan login per email dan IP,
+     * penanganan kegagalan API, serta reset penghitung saat login berhasil.
+     */
     public function login(Request $request)
     {
         $validated = $request->validate([

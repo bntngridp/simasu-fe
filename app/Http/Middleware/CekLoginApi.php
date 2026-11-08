@@ -21,6 +21,7 @@ class CekLoginApi
             return redirect()->route('login')->withErrors(['email' => 'Silakan login terlebih dahulu.']);
         }
 
+        // Kontribusi Bintang (BNT-02): periksa batas sesi pada request halaman yang dilindungi.
         if (AdminSession::expired($request)) {
             SecurityAudit::record($request, 'session_expired', $request->session()->get('user'));
             AdminSession::invalidate($request);

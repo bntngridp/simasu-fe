@@ -22,6 +22,7 @@
 /coverage.xml
 /test-results.xml
 /coverage
+/.scannerwork/
 Homestead.json
 Homestead.yaml
 Thumbs.db
