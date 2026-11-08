@@ -3,7 +3,7 @@ APP_ENV=local
 APP_KEY=base64:1uMk+BWvbFiTigHjy+JT/Qms27uZA1gTeJgUwMbhLIQ=
 APP_DEBUG=true
 APP_URL=http://localhost
-API_BASE_URL=https://api.indrayuda.my.id
+API_BASE_URL=[http://127.0.0.1:5001](http://127.0.0.1:5001)
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
