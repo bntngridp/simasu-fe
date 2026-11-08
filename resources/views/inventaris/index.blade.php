@@ -50,6 +50,7 @@
         {{-- Search --}}
         <div class="row g-2 mb-3">
             <div class="col-md-4">
+                <label for="searchInput" class="visually-hidden">Cari barang</label>
                 <input
                 type="text"
                 class="form-control"
@@ -58,12 +59,14 @@
             </div>
             <div class="col-md-5">
                 <form method="GET" action="{{ route('inventaris') }}" class="d-flex gap-2" id="filterForm">
+                    <label for="kategoriFilter" class="visually-hidden">Filter kategori</label>
                     <select class="form-select" name="kategori" id="kategoriFilter" onchange="this.form.submit()">
                         <option value="">Semua Kategori</option>
                         @foreach(($kategoriList ?? []) as $kategori)
                             <option value="{{ $kategori }}" @selected(strcasecmp($kategoriAktif ?? '', $kategori) === 0)>{{ $kategori }}</option>
                         @endforeach
                     </select>
+                    <label for="sortSelect" class="visually-hidden">Urutkan barang</label>
                     <select class="form-select" name="sort" id="sortSelect" onchange="this.form.submit()">
                         <option value="terbaru" @selected(($sortAktif ?? 'terbaru') === 'terbaru')>Terbaru</option>
                         <option value="nama" @selected(($sortAktif ?? '') === 'nama')>Nama (A-Z)</option>
@@ -73,6 +76,7 @@
                 </form>
             </div>
             <div class="col-md-3">
+                <label for="statusFilter" class="visually-hidden">Filter status stok</label>
                 <select class="form-select" id="statusFilter">
                     <option value="all">Semua Status</option>
                     <option value="Tersedia">Tersedia</option>
