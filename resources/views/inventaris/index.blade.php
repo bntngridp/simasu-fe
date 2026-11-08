@@ -10,9 +10,38 @@
         <h2 class="fw-bold">Inventaris</h2>
         <p class="text-muted">Kelola semua aset dan perlengkapan masjid</p>
     </div>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarang">
-        <i class="bi bi-plus-lg"></i> Tambah Barang
-    </button>
+    <div class="d-flex gap-2">
+        <a href="{{ route('inventaris.export', request()->only(['kategori', 'sort'])) }}"
+           class="btn btn-outline-success" id="btnExportCsv">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarang">
+            <i class="bi bi-plus-lg"></i> Tambah Barang
+        </button>
+    </div>
+</div>
+
+{{-- RINGKASAN STOK --}}
+@php
+    $summary = $summary ?? ['total_barang' => 0, 'total_stok' => 0, 'tersedia' => 0, 'terbatas' => 0, 'habis' => 0];
+    $summaryCards = [
+        ['key' => 'total_barang', 'label' => 'Total Barang', 'class' => 'text-dark'],
+        ['key' => 'total_stok',   'label' => 'Total Stok',   'class' => 'text-primary'],
+        ['key' => 'terbatas',     'label' => 'Stok Terbatas', 'class' => 'text-warning'],
+        ['key' => 'habis',        'label' => 'Stok Habis',   'class' => 'text-danger'],
+    ];
+@endphp
+<div class="row g-3 mb-4" id="inventorySummary">
+    @foreach($summaryCards as $card)
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">{{ $card['label'] }}</p>
+                <h3 class="fw-bold {{ $card['class'] }}" data-summary="{{ $card['key'] }}">{{ $summary[$card['key']] }}</h3>
+            </div>
+        </div>
+    </div>
+    @endforeach
 </div>
 
 {{-- CARD TABLE --}}
@@ -20,14 +49,30 @@
     <div class="card-body">
         {{-- Search --}}
         <div class="row g-2 mb-3">
-            <div class="col-md-8">
+            <div class="col-md-4">
                 <input
                 type="text"
                 class="form-control"
                 id="searchInput"
                 placeholder="Cari barang...">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
+                <form method="GET" action="{{ route('inventaris') }}" class="d-flex gap-2" id="filterForm">
+                    <select class="form-select" name="kategori" id="kategoriFilter" onchange="this.form.submit()">
+                        <option value="">Semua Kategori</option>
+                        @foreach(($kategoriList ?? []) as $kategori)
+                            <option value="{{ $kategori }}" @selected(strcasecmp($kategoriAktif ?? '', $kategori) === 0)>{{ $kategori }}</option>
+                        @endforeach
+                    </select>
+                    <select class="form-select" name="sort" id="sortSelect" onchange="this.form.submit()">
+                        <option value="terbaru" @selected(($sortAktif ?? 'terbaru') === 'terbaru')>Terbaru</option>
+                        <option value="nama" @selected(($sortAktif ?? '') === 'nama')>Nama (A-Z)</option>
+                        <option value="stok_terendah" @selected(($sortAktif ?? '') === 'stok_terendah')>Stok Terendah</option>
+                        <option value="stok_tertinggi" @selected(($sortAktif ?? '') === 'stok_tertinggi')>Stok Tertinggi</option>
+                    </select>
+                </form>
+            </div>
+            <div class="col-md-3">
                 <select class="form-select" id="statusFilter">
                     <option value="all">Semua Status</option>
                     <option value="Tersedia">Tersedia</option>
