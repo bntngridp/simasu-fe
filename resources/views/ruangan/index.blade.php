@@ -17,6 +17,63 @@
         @endif
     </div>
 
+    @if(isset($summary))
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 text-primary">
+                        <i class="fas fa-door-open fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total Ruangan</div>
+                        <div class="fs-4 fw-bold text-dark">{{ $summary['total'] ?? 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3 text-success">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Tersedia</div>
+                        <div class="fs-4 fw-bold text-success">{{ $summary['tersedia'] ?? 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3 text-danger">
+                        <i class="fas fa-users-slash fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Sedang Dipakai</div>
+                        <div class="fs-4 fw-bold text-danger">{{ $summary['dipakai'] ?? 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3 text-info">
+                        <i class="fas fa-users fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total Kapasitas</div>
+                        <div class="fs-4 fw-bold text-dark">{{ $summary['total_kapasitas'] ?? 0 }} orang</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <div class="row g-3">
