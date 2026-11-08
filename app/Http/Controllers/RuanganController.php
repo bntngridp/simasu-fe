@@ -259,8 +259,22 @@ class RuanganController extends Controller
         $startTimeInput = $request->query('start_time');
         $endTimeInput = $request->query('end_time');
 
-        $start = $startTimeInput ? Carbon::parse($startTimeInput) : Carbon::now();
-        $end = $endTimeInput ? Carbon::parse($endTimeInput) : $start->copy()->addHours(2);
+        if ($startTimeInput) {
+            $startTimeInput = str_replace(' ', '+', $startTimeInput);
+        }
+        if ($endTimeInput) {
+            $endTimeInput = str_replace(' ', '+', $endTimeInput);
+        }
+
+        try {
+            $start = $startTimeInput ? Carbon::parse($startTimeInput) : Carbon::now();
+            $end = $endTimeInput ? Carbon::parse($endTimeInput) : $start->copy()->addHours(2);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format waktu tidak valid.',
+            ], 422);
+        }
 
         if ($end->lessThanOrEqualTo($start)) {
             return response()->json([

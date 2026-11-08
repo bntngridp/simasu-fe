@@ -44,7 +44,7 @@ class RuanganSecurityTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Aula Utama');
         $response->assertSee('Tersedia');
-        $response->assertDontSee('Dipakai');
+        $this->assertEquals('tersedia', $response->viewData('rooms')->first()['status']);
     }
 
     public function test_ruangan_berstatus_dipakai_jika_ada_booking_approved_pada_waktu_sekarang()
@@ -111,7 +111,7 @@ class RuanganSecurityTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Ruang Seminar');
         $response->assertSee('Tersedia');
-        $response->assertDontSee('Dipakai');
+        $this->assertEquals('tersedia', $response->viewData('rooms')->first()['status']);
     }
 
     public function test_ruangan_tersedia_jika_waktu_booking_sudah_berlalu()
@@ -140,7 +140,7 @@ class RuanganSecurityTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Tersedia');
-        $response->assertDontSee('Dipakai');
+        $this->assertEquals('tersedia', $response->viewData('rooms')->first()['status']);
     }
 
     public function test_pemesanan_ruangan_memberikan_peringatan_jika_ruangan_sedang_dipakai()
@@ -382,7 +382,7 @@ class RuanganSecurityTest extends TestCase
         ]);
 
         $response = $this->withSession(['api_token' => 'mock-token-adrian'])
-            ->getJson('/ruangan/101/availability?start_time=' . $start->toIso8601String() . '&end_time=' . $end->toIso8601String());
+            ->getJson('/ruangan/101/availability?start_time=' . urlencode($start->toIso8601String()) . '&end_time=' . urlencode($end->toIso8601String()));
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -413,7 +413,7 @@ class RuanganSecurityTest extends TestCase
         ]);
 
         $response = $this->withSession(['api_token' => 'mock-token-adrian'])
-            ->getJson('/ruangan/101/availability?start_time=' . $start->toIso8601String() . '&end_time=' . $end->toIso8601String());
+            ->getJson('/ruangan/101/availability?start_time=' . urlencode($start->toIso8601String()) . '&end_time=' . urlencode($end->toIso8601String()));
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -431,7 +431,7 @@ class RuanganSecurityTest extends TestCase
         $end = $start->copy()->subHours(1); // Invalid: selesai sebelum mulai
 
         $response = $this->withSession(['api_token' => 'mock-token-adrian'])
-            ->getJson('/ruangan/101/availability?start_time=' . $start->toIso8601String() . '&end_time=' . $end->toIso8601String());
+            ->getJson('/ruangan/101/availability?start_time=' . urlencode($start->toIso8601String()) . '&end_time=' . urlencode($end->toIso8601String()));
 
         $response->assertStatus(422);
         $response->assertJson([
