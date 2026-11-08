@@ -44,7 +44,6 @@ Route::middleware([CekLoginApi::class])->group(function () {
 
     // Inventaris
     Route::get('/inventaris', [InventarisController::class, 'index'])->name('inventaris');
-    Route::get('/inventaris/export', [InventarisController::class, 'export'])->name('inventaris.export');
     Route::post('/inventaris', [InventarisController::class, 'store'])->name('inventaris.store');
     Route::put('/inventaris/{id}', [InventarisController::class, 'update'])->name('inventaris.update');
     Route::delete('/inventaris/{id}', [InventarisController::class, 'destroy'])->name('inventaris.destroy');
