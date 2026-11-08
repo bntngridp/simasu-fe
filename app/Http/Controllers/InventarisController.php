@@ -154,6 +154,17 @@ class InventarisController extends Controller
             ->all();
     }
 
+    /**
+     * Ambil parameter query sebagai string. Nilai non-skalar (mis. ?sort[]=nama)
+     * diabaikan agar jatuh ke nilai default, bukan memicu error 500.
+     */
+    public function queryString(Request $request, string $key): string
+    {
+        $value = $request->query($key);
+
+        return is_scalar($value) ? (string) $value : '';
+    }
+
     public function normalizeSort(?string $sort): string
     {
         return in_array($sort, self::SORT_OPTIONS, true) ? $sort : self::DEFAULT_SORT;
@@ -186,8 +197,8 @@ class InventarisController extends Controller
 
         $summary = $this->buildSummary($semua);
         $kategoriList = $this->extractCategories($semua);
-        $kategoriAktif = (string) $request->query('kategori', '');
-        $sortAktif = $this->normalizeSort($request->query('sort'));
+        $kategoriAktif = $this->queryString($request, 'kategori');
+        $sortAktif = $this->normalizeSort($this->queryString($request, 'sort'));
 
         $inventaris = $this->applyFilters($semua, $kategoriAktif, $sortAktif);
 
@@ -216,8 +227,8 @@ class InventarisController extends Controller
     {
         $items = $this->applyFilters(
             $this->fetchInventaris(),
-            (string) $request->query('kategori', ''),
-            $request->query('sort')
+            $this->queryString($request, 'kategori'),
+            $this->queryString($request, 'sort')
         );
 
         $filename = 'inventaris-' . now()->format('Ymd-His') . '.csv';
