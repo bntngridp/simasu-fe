@@ -16,6 +16,7 @@ class SecurityEvent extends Model
         'api_unavailable' => 'Layanan login tidak tersedia',
         'logout' => 'Logout',
         'session_expired' => 'Sesi kedaluwarsa',
+        'security_exported' => 'Ekspor riwayat keamanan',
     ];
 
     protected $fillable = ['event', 'email', 'api_user_id', 'ip_address'];

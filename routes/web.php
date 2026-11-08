@@ -68,6 +68,10 @@ Route::middleware([CekLoginApi::class])->group(function () {
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
 
     Route::get('/keamanan', [SecurityEventController::class, 'index'])->name('keamanan.index');
+    Route::get('/keamanan/export', [SecurityEventController::class, 'export'])->name('keamanan.export');
+   Route::get('/keamanan/export', [SecurityEventController::class, 'export'])
+    ->middleware('throttle:security-export')
+    ->name('keamanan.export');
 
     // Profil
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil');
