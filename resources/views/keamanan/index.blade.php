@@ -35,7 +35,10 @@
     </form>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">{{ $events->total() }} aktivitas tercatat</div>
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span>{{ $events->total() }} aktivitas tercatat</span>
+            <a href="{{ route('keamanan.export', request()->query()) }}" class="btn btn-outline-success btn-sm">Ekspor CSV</a>
+        </div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead class="table-light"><tr><th scope="col">Waktu</th><th scope="col">Aktivitas</th><th scope="col">Akun</th><th scope="col">Alamat IP</th></tr></thead>
