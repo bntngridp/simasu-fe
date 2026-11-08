@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SecurityEvent;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Support\SecurityAudit;
 
 class SecurityEventController extends Controller
 {
@@ -28,14 +29,20 @@ class SecurityEventController extends Controller
     public function export(Request $request)
     {
         $filters = $this->authorizedFilters($request);
-        $filename = 'riwayat-keamanan-'.now()->format('Ymd-His').'.csv';
 
-        return response()->streamDownload(function () use ($filters) {
+        // Batas id sebelum audit dicatat, supaya ekspor tidak memuat barisnya sendiri.
+        $cutoffId = (int) SecurityEvent::max('id');
+        SecurityAudit::record($request, 'security_exported');
+
+        $filename = 'riwayat-keamanan-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($filters, $cutoffId) {
             $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF"); // BOM agar Excel membaca UTF-8
+            fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, ['Waktu (WIB)', 'Aktivitas', 'Akun', 'Alamat IP'], ',', '"', '');
 
             $rows = $this->filteredQuery($filters)
+                ->where('id', '<=', $cutoffId)
                 ->latest('id')
                 ->limit(self::EXPORT_LIMIT)
                 ->cursor();
@@ -67,9 +74,9 @@ class SecurityEventController extends Controller
     private function filteredQuery(array $filters)
     {
         return SecurityEvent::query()
-            ->when($filters['event'] ?? null, fn ($q, $event) => $q->where('event', $event))
-            ->when($filters['date'] ?? null, fn ($q, $date) => $q->whereDate('created_at', $date))
-            ->when($filters['email'] ?? null, fn ($q, $email) => $q->where('email', mb_strtolower(trim($email))));
+            ->when($filters['event'] ?? null, fn($q, $event) => $q->where('event', $event))
+            ->when($filters['date'] ?? null, fn($q, $date) => $q->whereDate('created_at', $date))
+            ->when($filters['email'] ?? null, fn($q, $email) => $q->where('email', mb_strtolower(trim($email))));
     }
 
     /** Cegah CSV/formula injection: nilai berawalan = + - @ diberi tanda petik. */
@@ -79,6 +86,6 @@ class SecurityEventController extends Controller
             return '-';
         }
 
-        return preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
+        return preg_match('/^[=+\-@\t\r]/', $value) ? "'" . $value : $value;
     }
 }
