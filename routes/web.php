@@ -56,6 +56,7 @@ Route::middleware([CekLoginApi::class])->group(function () {
     Route::put('/ruangan/{id}', [RuanganController::class, 'update'])->name('ruangan.update');
     Route::delete('/ruangan/{id}', [RuanganController::class, 'destroy'])->name('ruangan.destroy');
     Route::get('/ruangan/{id}/book', [RuanganController::class, 'book'])->name('ruangan.book');
+    Route::get('/ruangan/{id}/availability', [RuanganController::class, 'checkAvailability'])->name('ruangan.availability');
 
     // Kalender
     Route::get('/kalender', [KalenderController::class, 'index'])->name('kalender');
