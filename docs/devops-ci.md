@@ -49,12 +49,12 @@ Implementasi audit saat ini masih memakai `|| true`, sehingga temuan vulnerabili
 
 ## Branch Protection dan Code Review
 
-Branch utama `main` sudah dikonfigurasi dengan PR wajib, minimal satu approval, required checks, penyelesaian percakapan, dan enforce admins. Required checks FE yang diverifikasi adalah `Build and Test Laravel` serta `Dependency Check`. Ketentuan review:
+Branch utama `main` dikonfigurasi dengan PR wajib, minimal satu approval, required checks, penyelesaian percakapan, dan enforce admins. Setelah integrasi Cloud berhasil, required checks FE mencakup `Build and Test Laravel`, `Dependency Check`, dan `SonarCloud Code Analysis`. Ketentuan review:
 
 - Require pull request before merging.
 - Require at least 1 approval.
 - Require status checks to pass before merging.
-- Required checks saat ini: `Build and Test Laravel` dan `Dependency Check`. Penambahan check Cloud sebagai required check perlu mengikuti nama check aktual setelah integrasi berhasil.
+- Required check `SonarCloud Code Analysis` terikat pada aplikasi SonarQube Cloud, sehingga hasil scanner/quality gate harus tersedia pada commit PR. Job GitHub Actions `SonarQube Cloud Analysis` tetap menjalankan scanner dan menunggu quality gate.
 - Disable direct push ke branch `main` untuk anggota biasa.
 
 ## STRIDE Singkat
