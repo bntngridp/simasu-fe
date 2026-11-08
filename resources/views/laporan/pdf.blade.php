@@ -16,6 +16,9 @@
     <div class="header">
         <h1>LAPORAN SISTEM MANAJEMEN SARPRAS (SIMASU)</h1>
         <p>Dicetak pada: {{ $report['date'] }}</p>
+        @if ($report['filters']['start_date'])
+            <p>Periode tanggal mulai booking: {{ $report['filters']['start_date'] }} sampai {{ $report['filters']['end_date'] }}</p>
+        @endif
     </div>
 
     <div class="section-title">1. Ringkasan Inventaris</div>

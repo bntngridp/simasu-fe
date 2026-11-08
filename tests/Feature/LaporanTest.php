@@ -59,6 +59,7 @@ class LaporanTest extends TestCase
         $response->assertSee('3 Total Pengajuan');
         $response->assertSee('Disetujui: 1');
         $response->assertSee('Pending: 1');
+        $response->assertSee('Ditolak: 1');
     }
 
     public function test_laporan_export_pdf_returns_successful_download(): void
@@ -95,5 +96,51 @@ class LaporanTest extends TestCase
         
         $response->assertSee('0 Item');
         $response->assertSee('0 Ruangan');
+    }
+
+    public function test_laporan_filters_bookings_by_inclusive_start_date_range(): void
+    {
+        $this->withoutVite();
+        $baseUrl = $this->getBaseUrl();
+
+        Http::fake([
+            $baseUrl . '/api/inventory' => Http::response([]),
+            $baseUrl . '/api/rooms' => Http::response([]),
+            $baseUrl . '/api/bookings' => Http::response([
+                ['id' => 1, 'status' => 'approved', 'start_time' => '2026-11-01 08:00'],
+                ['id' => 2, 'status' => 'pending', 'tanggal_mulai' => '2026-11-15 09:00'],
+                ['id' => 3, 'status' => 'rejected', 'start_date' => '2026-11-30'],
+                ['id' => 4, 'status' => 'pending', 'start_time' => '2026-12-01 08:00'],
+            ]),
+        ]);
+
+        $response = $this->withSession(['api_token' => 'token_test'])
+            ->get(route('laporan.index', ['start_date' => '2026-11-01', 'end_date' => '2026-11-30']));
+
+        $response->assertOk();
+        $response->assertSee('3 Total Pengajuan');
+        $response->assertSee('Disetujui: 1');
+        $response->assertSee('Pending: 1');
+        $response->assertSee('Ditolak: 1');
+    }
+
+    public function test_laporan_date_range_requires_valid_ordered_dates(): void
+    {
+        $this->withSession(['api_token' => 'token_test'])
+            ->get(route('laporan.index', ['start_date' => '2026-11-30', 'end_date' => '2026-11-01']))
+            ->assertRedirect()
+            ->assertSessionHasErrors('end_date');
+    }
+
+    public function test_laporan_csv_export_contains_summary_and_download_headers(): void
+    {
+        $this->mockApiResponses();
+
+        $response = $this->withSession(['api_token' => 'token_test'])->get(route('laporan.export.csv'));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertStringContainsString('Laporan_SIMASU', $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('Permintaan,Ditolak,1', $response->streamedContent());
     }
 }
