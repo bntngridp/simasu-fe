@@ -14,6 +14,8 @@ use Illuminate\Support\ViewErrorBag;
 
 class AuthController extends Controller
 {
+    private const NO_STORE_CACHE_CONTROL = 'no-store, private';
+
     public function showLoginForm(Request $request)
     {
         if ($request->session()->has('api_token')) {
@@ -28,7 +30,7 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'Sesi berakhir karena tidak aktif. Silakan login kembali.']);
         }
 
-        return response()->view('auth.login')->header('Cache-Control', 'no-store, private');
+        return response()->view('auth.login')->header('Cache-Control', self::NO_STORE_CACHE_CONTROL);
     }
 
     /**
@@ -60,7 +62,7 @@ class AuthController extends Controller
             return response()->view('auth.login', [
                 'email' => $email,
                 'errors' => (new ViewErrorBag)->put('default', new MessageBag(['email' => $message])),
-            ], 429)->header('Retry-After', (string) $seconds)->header('Cache-Control', 'no-store, private');
+            ], 429)->header('Retry-After', (string) $seconds)->header('Cache-Control', self::NO_STORE_CACHE_CONTROL);
         }
 
         try {
@@ -116,7 +118,7 @@ class AuthController extends Controller
         AdminSession::invalidate($request);
 
         return redirect()->route('login')->with('success', 'Berhasil logout.')
-            ->header('Cache-Control', 'no-store, private');
+            ->header('Cache-Control', self::NO_STORE_CACHE_CONTROL);
     }
 
     private function unavailable(Request $request, string $email)
