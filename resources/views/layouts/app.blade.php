@@ -101,6 +101,12 @@
                 </div>
 
                 <div class="list-group command-palette-list" id="commandPaletteList">
+                    @if(session('user.role') === 'admin')
+                    <a href="{{ route('keamanan.index') }}" class="list-group-item list-group-item-action command-palette-item" data-command-keywords="keamanan riwayat login logout audit sesi">
+                        <div class="fw-semibold">Riwayat Keamanan</div>
+                        <small class="text-muted">Tinjau aktivitas autentikasi admin.</small>
+                    </a>
+                    @endif
                     <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action command-palette-item" data-command-keywords="dashboard beranda ringkasan statistik">
                         <div class="fw-semibold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</div>
                         <small class="text-muted">Lihat ringkasan aplikasi dan aktivitas terbaru.</small>
@@ -141,5 +147,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')
+@if(session()->has('api_token') && session()->has('last_activity_at'))
+<script>
+    (() => {
+        const expiresAt = {{ ((int) session('last_activity_at') + \App\Support\AdminSession::idleSeconds()) * 1000 }};
+        const expire = () => {
+            if (Date.now() >= expiresAt) {
+                window.location.replace(@json(route('login')));
+            }
+        };
+        window.setTimeout(expire, Math.max(1000, expiresAt - Date.now()));
+        document.addEventListener('visibilitychange', expire);
+        window.addEventListener('pageshow', expire);
+    })();
+</script>
+@endif
 </body>
 </html>

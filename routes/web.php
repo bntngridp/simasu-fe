@@ -11,6 +11,7 @@ use App\Http\Middleware\CekLoginApi;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\SecurityEventController;
 
 Route::get('/', function () {
     if (session()->has('api_token')) {
@@ -43,6 +44,7 @@ Route::middleware([CekLoginApi::class])->group(function () {
 
     // Inventaris
     Route::get('/inventaris', [InventarisController::class, 'index'])->name('inventaris');
+    Route::get('/inventaris/export', [InventarisController::class, 'export'])->name('inventaris.export');
     Route::post('/inventaris', [InventarisController::class, 'store'])->name('inventaris.store');
     Route::put('/inventaris/{id}', [InventarisController::class, 'update'])->name('inventaris.update');
     Route::delete('/inventaris/{id}', [InventarisController::class, 'destroy'])->name('inventaris.destroy');
@@ -64,6 +66,8 @@ Route::middleware([CekLoginApi::class])->group(function () {
 
     // Notifikasi Admin
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+
+    Route::get('/keamanan', [SecurityEventController::class, 'index'])->name('keamanan.index');
 
     // Profil
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil');

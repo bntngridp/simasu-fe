@@ -49,6 +49,10 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:security": [
+            "@php artisan config:clear --ansi",
+            "@php vendor/bin/phpunit tests/Feature/LoginThrottlingTest.php tests/Feature/AdminSessionTest.php tests/Feature/SecurityAuditTest.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

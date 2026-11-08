@@ -2,7 +2,7 @@ name: CI DevOps
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'devops/**']
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -66,13 +66,15 @@ jobs:
           APP_KEY: base64:2n6IKs9az4wR10OkNy3L+qnxpYXxKC8mD2pbAz/lYnc=
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
-        run: php artisan test --coverage-clover=coverage.xml
+        run: php artisan test --coverage --min=51 --coverage-clover=coverage.xml --log-junit=test-results.xml
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-coverage
-          path: coverage.xml
+          path: |
+            coverage.xml
+            test-results.xml
           if-no-files-found: error
 
   dependency-check:
@@ -108,15 +110,30 @@ jobs:
         run: npm audit --audit-level=high || true
 
   sonar-analysis:
-    name: SonarQube Analysis
+    name: SonarQube Cloud Analysis
     runs-on: ubuntu-latest
     needs: build-test
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    # The Free plan supports the main branch and pull requests targeting it.
+    # A missing Cloud project configuration skips this job explicitly.
+    if: >-
+      ${{ vars.SONAR_ORGANIZATION != '' && vars.SONAR_PROJECT_KEY != '' &&
+          ((github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository) ||
+           github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+    timeout-minutes: 15
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
 
     steps:
+      - name: Validate SonarQube Cloud token
+        shell: bash
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::error::Configure the SONAR_TOKEN repository secret before enabling Cloud analysis."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -128,18 +145,11 @@ jobs:
           name: phpunit-coverage
           path: .
 
-      - name: Run SonarQube scanner
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' }}
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Explain skipped SonarQube scan
-        if: ${{ env.SONAR_TOKEN == '' || env.SONAR_HOST_URL == '' }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          echo "SonarQube scan skipped because SONAR_TOKEN or SONAR_HOST_URL is not configured."
-          echo "Add both values in GitHub repository Settings > Secrets and variables > Actions."
+      - name: Run SonarQube Cloud scanner and quality gate
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8
+        with:
+          args: >-
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300

@@ -66,7 +66,7 @@
                     <div class="input-wrap">
                         <input type="email" name="email" id="email" class="input" 
                                placeholder="admin@indrayuda.my.id" 
-                               value="{{ old('email') }}" required autofocus>
+                               value="{{ old('email', $email ?? '') }}" required autofocus autocomplete="username">
                     </div>
                 </div>
 
@@ -74,7 +74,7 @@
                     <label class="label" for="password">Kata Sandi</label>
                     <div class="input-wrap password-container">
                         <input type="password" name="password" id="password" class="input" 
-                               placeholder="••••••••" required>
+                               placeholder="••••••••" required autocomplete="current-password">
                         
                         <button type="button" class="toggle-password" onclick="togglePassword()">
                             <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
