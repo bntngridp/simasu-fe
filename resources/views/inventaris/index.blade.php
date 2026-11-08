@@ -30,9 +30,9 @@
             <div class="col-md-4">
                 <select class="form-select" id="statusFilter">
                     <option value="all">Semua Status</option>
-                    <option value="Tersedia">Tersedia</option>
-                    <option value="Terbatas">Terbatas</option>
-                    <option value="Habis">Habis</option>
+                    <option value="tersedia">Tersedia</option>
+                    <option value="terbatas">Terbatas</option>
+                    <option value="habis">Habis</option>
                 </select>
             </div>
         </div>
@@ -112,7 +112,7 @@
                     @endforeach
                     @else
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             Belum ada data inventaris
                         </td>
                     </tr>
@@ -236,6 +236,25 @@
 
         searchInput.addEventListener('input', applyInventoryFilter);
         document.getElementById('statusFilter').addEventListener('change', applyInventoryFilter);
+
+        // if (searchInput && tableBody) {
+        //     searchInput.addEventListener('input', function(e) {
+        //         const searchTerm = e.target.value.toLowerCase();
+        //         const rows = tableBody.getElementsByTagName('tr');
+        //         let visibleCount = 0;
+
+        //         Array.from(rows).forEach(row => {
+        //             const text = row.textContent.toLowerCase();
+        //             const isVisible = text.includes(searchTerm);
+        //             row.style.display = isVisible ? '' : 'none';
+        //             if (isVisible && !row.querySelector('td[colspan]')) {
+        //                 visibleCount++;
+        //             }
+        //         });
+
+        //         document.getElementById('itemCount').textContent = visibleCount;
+        //     });
+        // }
 
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', function() {
